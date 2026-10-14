@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>Bible Reading</title>
+<style>
+:root{--gold:#f0c46e;--gold2:#f7d28a;--ivory:#f6efe0;--beige:#d9c7a3;--navy:#050b16;--ember:#d9895a}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
+body{font-family:"Noto Serif KR",serif;color:var(--ivory);word-break:keep-all}
+#stage{position:absolute;inset:0;overflow:hidden;background:var(--navy)}
+#shots{position:absolute;inset:0}
+.shot{position:absolute;left:50%;top:50%;width:2400px;height:1347px;margin:-673.5px 0 0 -1200px;display:none;will-change:transform,opacity}
+.shot img{width:100%;height:100%;display:block}
+.layer{position:absolute;inset:0;pointer-events:none}
+#grade{mix-blend-mode:multiply}
+#rays{mix-blend-mode:screen;background:repeating-conic-gradient(from 0deg at 50% -20%,rgba(255,220,150,.0) 0deg,rgba(255,220,150,.10) 3deg,rgba(255,220,150,0) 7deg)}
+#fog1,#fog2{width:3000px;left:-540px;mix-blend-mode:screen}
+#fog1{background:radial-gradient(ellipse 600px 160px at 20% 78%,rgba(220,210,190,.10),transparent 70%),radial-gradient(ellipse 700px 200px at 65% 85%,rgba(220,210,190,.08),transparent 70%)}
+#fog2{background:radial-gradient(ellipse 800px 220px at 40% 90%,rgba(200,190,170,.09),transparent 70%),radial-gradient(ellipse 500px 140px at 85% 72%,rgba(200,190,170,.07),transparent 70%)}
+#vig{background:radial-gradient(ellipse 75% 70% at 50% 46%,transparent 55%,rgba(0,0,0,.62) 100%)}
+#bottomshade{background:linear-gradient(to top,rgba(3,6,12,.78) 0%,rgba(3,6,12,.35) 20%,transparent 36%)}
+#topshade{background:linear-gradient(to bottom,rgba(3,6,12,.55) 0%,transparent 16%)}
+canvas{position:absolute;inset:0}
+/* HUD */
+#hud{position:absolute;left:64px;top:46px;white-space:nowrap}
+#hud .k{font-family:"Noto Sans KR",sans-serif;font-size:15px;letter-spacing:.42em;color:var(--gold);opacity:.85}
+#hud .r{font-size:34px;margin-top:6px;letter-spacing:.04em}
+#hud .r b{color:var(--gold2);font-weight:600}
+#hud .nar{font-family:"Noto Sans KR",sans-serif;font-size:14px;letter-spacing:.3em;color:var(--beige);margin-top:10px}
+#prog{position:absolute;right:64px;top:52px;display:flex;gap:10px;align-items:center;font-family:"Noto Sans KR",sans-serif}
+#prog .d{width:46px;height:3px;background:rgba(246,239,224,.22);position:relative;overflow:hidden}
+#prog .d i{position:absolute;inset:0;background:var(--gold);transform-origin:left}
+#prog .lab{font-size:13px;letter-spacing:.3em;color:var(--beige);margin-right:8px}
+/* 자막 */
+#sub{position:absolute;left:0;right:0;bottom:92px;text-align:center;white-space:nowrap}
+#sub .t{font-size:52px;font-weight:500;letter-spacing:.01em;color:var(--ivory);text-shadow:0 2px 6px rgba(0,0,0,.85),0 0 22px rgba(0,0,0,.55)}
+#sub .t em{font-style:normal;color:var(--gold2)}
+#nsub{position:absolute;left:0;right:0;bottom:84px;text-align:center;white-space:nowrap}
+#nsub .lab{display:inline-block;font-family:"Noto Sans KR",sans-serif;font-size:15px;letter-spacing:.34em;color:var(--beige);opacity:.9;border-top:1px solid rgba(217,199,163,.5);padding-top:8px;margin-bottom:12px}
+#nsub .t{font-family:"Noto Sans KR",sans-serif;font-size:36px;font-style:italic;font-weight:300;color:var(--beige);line-height:1.5;text-shadow:0 2px 6px rgba(0,0,0,.9)}
+/* 스팅어 */
+#sting{position:absolute;left:0;top:356px;width:1920px;height:230px;white-space:nowrap}
+#sting .band{position:absolute;left:0;top:0;height:230px;width:1920px;background:linear-gradient(90deg,rgba(4,8,16,.82) 0%,rgba(4,8,16,.55) 50%,transparent 85%)}
+#sting .line{position:absolute;left:120px;top:58px;height:2px;width:460px;background:linear-gradient(90deg,var(--gold),transparent)}
+#sting .p{position:absolute;left:120px;top:72px;font-family:"Noto Sans KR",sans-serif;font-size:17px;letter-spacing:.5em;color:var(--gold)}
+#sting .h{position:absolute;left:116px;top:100px;font-size:64px;font-weight:600;color:var(--ivory);letter-spacing:.02em}
+#sting .rf{position:absolute;left:120px;top:186px;font-family:"Noto Sans KR",sans-serif;font-size:20px;letter-spacing:.2em;color:var(--beige)}
+/* 키네틱 */
+#kin{position:absolute;inset:0;pointer-events:none}
+#kbd{background:radial-gradient(ellipse 1300px 480px at 50% 38%,rgba(3,6,12,.78),rgba(3,6,12,.35) 60%,transparent 82%)}
+.kw{position:absolute;left:0;right:0;top:300px;text-align:center;white-space:nowrap}
+.kw.hi{top:250px}
+.kw .w{font-size:96px;font-weight:700;letter-spacing:.06em;color:var(--gold2);text-shadow:0 0 26px rgba(0,0,0,.65),0 3px 10px rgba(0,0,0,.8)}
+.kw .w.ember{color:#e9a77a;text-shadow:0 0 40px rgba(217,137,90,.35),0 3px 10px rgba(0,0,0,.8)}
+.kw .en{font-family:"Noto Sans KR",sans-serif;font-size:18px;letter-spacing:.6em;color:var(--beige);margin-top:14px}
+.hero{position:absolute;left:0;right:0;top:0;height:1080px;display:flex;flex-direction:column;align-items:center;justify-content:center;white-space:pre;text-align:center}
+.hero .w{font-size:82px;font-weight:700;line-height:1.38;color:var(--ivory);letter-spacing:.02em;text-shadow:0 3px 14px rgba(0,0,0,.8)}
+.hero .w.glow{color:var(--gold2);text-shadow:0 0 50px rgba(240,196,110,.5),0 3px 14px rgba(0,0,0,.7)}
+.hero .rf{font-family:"Noto Sans KR",sans-serif;font-size:22px;letter-spacing:.3em;color:var(--beige);margin-top:26px}
+.dual{position:absolute;top:250px;width:640px;text-align:center;white-space:nowrap}
+.dual .a{font-family:"Noto Sans KR",sans-serif;font-size:24px;letter-spacing:.3em;color:var(--beige);text-shadow:0 0 12px rgba(0,0,0,.9),0 2px 6px rgba(0,0,0,.9)}
+.dual .b{font-size:70px;font-weight:700;color:var(--gold2);margin-top:10px;text-shadow:0 0 28px rgba(0,0,0,.85),0 0 10px rgba(0,0,0,.7),0 3px 10px rgba(0,0,0,.9)}
+.divl{position:absolute;left:959px;top:240px;width:2px;height:190px;background:linear-gradient(transparent,var(--gold),transparent)}
+.li{position:absolute;white-space:nowrap;font-size:54px;font-weight:600;color:var(--ivory);text-shadow:0 3px 10px rgba(0,0,0,.85)}
+.fin{position:absolute;left:0;right:0;top:470px;text-align:center;font-size:100px;font-weight:700;color:var(--gold2);text-shadow:0 0 40px rgba(240,196,110,.4),0 3px 10px rgba(0,0,0,.7)}
+.st{position:absolute;left:0;right:0;text-align:center;white-space:nowrap;font-weight:700;text-shadow:0 3px 12px rgba(0,0,0,.85)}
+.swap{position:absolute;left:0;right:0;top:250px;height:260px}
+.swap .x{position:absolute;top:40px;width:760px;text-align:center;font-size:84px;font-weight:700;white-space:nowrap}
+.swap .x.a{left:120px;color:var(--gold2);text-shadow:0 0 40px rgba(240,196,110,.45),0 3px 10px rgba(0,0,0,.8)}
+.swap .x.b{right:120px;color:#a89b86;text-shadow:0 3px 10px rgba(0,0,0,.9)}
+.swap .c{position:absolute;left:0;right:0;top:170px;text-align:center;font-family:"Noto Sans KR",sans-serif;font-size:26px;letter-spacing:.4em;color:var(--beige)}
+.swap .ar{position:absolute;left:880px;top:62px;width:160px;height:60px}
+.stamp{position:absolute;right:70px;top:170px;width:820px;text-align:center;white-space:nowrap}
+.stamp .n{font-size:40px;color:#c9a46a;letter-spacing:.2em}
+.stamp .w{display:inline-block;font-size:66px;font-weight:700;color:#e8d9bd;border:3px solid rgba(201,164,106,.8);padding:10px 34px;margin-top:8px;background:rgba(10,8,6,.35);text-shadow:0 3px 10px rgba(0,0,0,.8)}
+.cite{position:absolute;right:64px;top:96px;white-space:nowrap;font-family:"Noto Sans KR",sans-serif;font-size:20px;letter-spacing:.12em;color:var(--beige);border-left:3px solid var(--gold);padding:8px 16px;background:rgba(4,8,16,.55)}
+.cite b{color:var(--gold2);font-weight:500;margin-left:8px}
+.sin{position:absolute;white-space:nowrap;font-weight:600;color:#cdbfa8;text-shadow:0 3px 12px rgba(0,0,0,.95)}
+#title{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;white-space:nowrap}
+#title .k{font-family:"Noto Sans KR",sans-serif;font-size:20px;letter-spacing:.8em;color:var(--beige);margin-bottom:22px;padding-left:.8em}
+#title .h{font-size:150px;font-weight:700;letter-spacing:.12em;padding-left:.12em}
+#title .h span{display:inline-block;background:linear-gradient(180deg,#fff1cc 0%,#f0c46e 55%,#b98a3e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 18px rgba(0,0,0,.6))}
+#title .s{font-family:"Noto Sans KR",sans-serif;font-size:22px;letter-spacing:.4em;color:var(--beige);margin-top:26px}
+#title .ln{width:520px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-top:22px}
+#end .chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:1700px;margin-top:40px}
+#end .chip{font-family:"Noto Sans KR",sans-serif;font-size:16px;color:var(--ivory);border:1px solid rgba(240,196,110,.55);padding:10px 20px;background:rgba(5,11,22,.45);letter-spacing:.05em}
+#end .chip b{color:var(--gold);font-weight:500;margin-right:10px}
+#black{position:absolute;inset:0;background:#000}
+</style></head><body>
+<div id="stage">
+  <div id="shots"></div>
+  <div class="layer" id="grade"></div>
+  <div class="layer" id="rays"></div>
+  <div class="layer" id="fog1"></div><div class="layer" id="fog2"></div>
+  <canvas id="dust" width="1920" height="1080"></canvas>
+  <div class="layer" id="topshade"></div><div class="layer" id="bottomshade"></div>
+  <div class="layer" id="vig"></div>
+  <div class="layer" id="kbd"></div>
+  <div id="kin"></div>
+  <div id="title"><div class="k" id="tk">ROMANS · CHAPTER 1</div><div class="h" id="th"></div><div class="ln"></div><div class="s" id="tver">성경 낭독</div></div>
+  <div id="end" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;white-space:nowrap">
+    <div style="font-family:'Noto Sans KR';font-size:18px;letter-spacing:.8em;color:var(--beige);padding-left:.8em" id="ek">ROMANS · CHAPTER 1</div>
+    <div style="font-size:110px;font-weight:700;letter-spacing:.1em;margin-top:14px"><span style="background:linear-gradient(180deg,#fff1cc,#f0c46e 55%,#b98a3e);-webkit-background-clip:text;background-clip:text;color:transparent" id="eh">로마서 1장</span></div>
+    <div class="chips" id="chips"></div>
+  </div>
+  <div id="sting"><div class="band"></div><div class="line"></div><div class="p"></div><div class="h"></div><div class="rf"></div></div>
+  <div id="hud"><div class="k" id="hudk">BOOK</div><div class="r" id="ref"></div><div class="nar" id="narlab">해설 · NARRATION</div></div>
+  <div id="prog"><span class="lab">PART</span></div>
+  <div id="sub"><div class="t" id="subt"></div></div>
+  <div id="nsub"><div class="lab">해설 · NARRATION</div><div class="t" id="nsubt"></div></div>
+  <div id="black"></div>
+</div>
+<script>
+const TL=__TL__;
+const TOTAL=TL.END;
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const P=(t,a,b)=>cl((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3), eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eback=x=>{const c=1.5;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const win=(t,a,b,fi=.5,fo=.5)=>Math.min(P(t,a,a+fi),1-P(t,b-fo,b));
+// 샷
+const SH=TL.shots.map((s,i)=>{const d=document.createElement('div');d.className='shot';d.innerHTML=`<img src="imgs/${s.img}.jpg">`;$('shots').appendChild(d);return {...s,el:d,z:i}});
+const GR={warm:[255,236,210,0],dawn:[255,240,220,0],night:[200,210,235,0],glory:[255,240,215,0],wrath:[150,160,190,1],cold:[175,185,205,0],dark:[150,155,170,0]};
+// 진행 표시
+TL.parts.forEach(p=>{const d=document.createElement('div');d.className='d';d.innerHTML='<i></i>';$('prog').appendChild(d);p.el=d.firstChild});
+// 엔딩 칩
+$('chips').innerHTML=TL.parts.map(p=>`<div class="chip"><b>${p.ref}</b>${p.title}</div>`).join('');
+// 타이틀 글자
+const BK=TL.book||'',BKE=TL.bookEn||'',UN=TL.unit||'장',HEAD=BK+' '+TL.ch+UN;
+$('tk').textContent=$('ek').textContent=BKE+' · '+(UN==='편'?'PSALM ':'CHAPTER ')+TL.ch;$('eh').textContent=HEAD;$('hudk').textContent=BKE+' · '+BK;$('tver').textContent='성경 낭독 · '+(TL.version||'개역개정');document.title=HEAD;
+$('th').innerHTML=[...HEAD].map(c=>`<span>${c===' '?'&nbsp;':c}</span>`).join('');
+const thS=[...$('th').children];
+// 자막 키워드 강조
+const KW=TL.kw;
+const KWre=new RegExp('('+KW.join('|')+')','g');
+const hl=s=>s.replace(KWre,'<em>$1</em>');
+// 먼지 파티클
+const cv=$('dust'),cx=cv.getContext('2d');
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const DUST=[...Array(110)].map(()=>({x:rnd()*1920,y:rnd()*1080,r:.6+rnd()*2.4,vx:(rnd()-.5)*14,vy:-4-rnd()*10,ph:rnd()*6.28,z:.4+rnd()*1.2}));
+// 이벤트 DOM 캐시
+const EV=TL.ev.map(e=>{const d=document.createElement('div');d.style.display='none';$('kin').appendChild(d);build(e,d);return {...e,el:d}});
+function build(e,d){
+  if(e.kind==='kw'){d.className='kw'+(e.pos==='hi'?' hi':'');d.innerHTML=`<div class="w ${e.tone||''}">${e.txt}</div><div class="en">${e.en}</div>`}
+  else if(e.kind==='hero'){d.className='hero';d.dataset.d='flex';d.innerHTML=`<div class="w ${e.glow?'glow':''}" style="${e.fs?`font-size:${e.fs}px`:``}">${e.txt}</div>`+(e.ref?`<div class="rf">${e.ref}</div>`:'')}
+  else if(e.kind==='dual'){d.innerHTML=`<div class="dual" style="left:200px"><div class="a">${e.l1}</div><div class="b" style="${e.lcol?`color:${e.lcol}`:``}">${e.l2}</div></div><div class="divl"></div><div class="dual" style="left:1080px"><div class="a">${e.r1}</div><div class="b" style="${e.rcol?`color:${e.rcol}`:``}">${e.r2}</div></div>`}
+  else if(e.kind==='list'){const pos=[[300,250],[1100,250],[220,370],[1060,370]];d.innerHTML=e.items.map((it,i)=>`<div class="li" style="left:${pos[i][0]}px;top:${pos[i][1]}px">${it[0]}</div>`).join('')+`<div class="fin">${e.fin}</div>`}
+  else if(e.kind==='stack'){d.innerHTML=e.items.map((it,i)=>`<div class="st" style="top:${(e.top||[200,272,388,520])[i]}px;font-size:${(e.sz||[40,92,72,42])[i]}px;color:${(e.col||['var(--beige)','var(--gold2)','var(--ivory)','var(--beige)'])[i]}">${it[0]}</div>`).join('')}
+  else if(e.kind==='swap'){d.className='swap';d.innerHTML=`<div class="x a">${e.a}</div><svg class="ar" viewBox="0 0 160 60"><path d="M10 20 H140 M120 6 L142 20 L120 34" stroke="#d9c7a3" stroke-width="3" fill="none"/><path d="M150 44 H20 M40 30 L18 44 L40 58" stroke="#d9c7a3" stroke-width="3" fill="none" opacity=".6"/></svg><div class="x b">${e.b}</div><div class="c">${e.c}</div>`}
+  else if(e.kind==='stamp'){d.className='stamp';d.innerHTML=`<div class="n">${e.num}</div><div class="w">${e.txt}</div>`}
+  else if(e.kind==='cite'){d.className='cite';d.innerHTML=`구약 인용<b>${e.txt}</b>`}
+  else if(e.kind==='sins'){seed=99;const cols=[300,690,1080,1470];d.innerHTML=e.items.map((it,i)=>{const L=it[0].length;const fs=L>5?40:58;const x=cols[i%4]+(rnd()-.5)*90-(L>5?60:0);const y=215+Math.floor(i/4)*96+(rnd()-.5)*24;return `<div class="sin" style="left:${x}px;top:${y}px;font-size:${fs}px">${it[0]}</div>`}).join('')}
+}
+function show(el,o,tr){el.style.display=o>0.002?(el.dataset.d||'block'):'none';if(o>0.002){el.style.opacity=o;el.style.transform=tr||''}}
+function setTime(t){
+  // 샷 (크로스페이드 1.4s)
+  const XF=1.4;
+  for(const s of SH){
+    const a=s.t-(s.z?XF*0.5:0), b=s.e+XF*0.5;
+    if(t<a||t>b){s.el.style.display='none';continue}
+    const o=s.z?P(t,a,a+XF):1;
+    const k=eio(P(t,s.t,s.e)),[s0,s1,x0,x1,y0,y1]=s.mv;
+    const sc=s0+(s1-s0)*k, x=x0+(x1-x0)*k, y=y0+(y1-y0)*k;
+    s.el.style.display='block';s.el.style.opacity=o;s.el.style.zIndex=s.z;
+    s.el.style.transform=`translate(${x}%,${y}%) scale(${sc})`;
+  }
+  // 현재 샷 등급
+  let cur=SH[0];for(const s of SH) if(t>=s.t) cur=s;
+  const g=GR[cur.g];
+  let dark=0;
+  if(cur.g==='wrath') dark=.35*P(t,cur.t+2,cur.t+10)*(1-.5*P(t,TL.vstart[20],TL.vstart[20]+3));
+  if(cur.img==='14_street') dark=.15+.25*P(t,TL.vstart[29],TL.vstart[29]+4)-.3*P(t,TL.vstart[32]+6,TL.vstart[32]+10);
+  $('grade').style.background=`rgba(${g[0]},${g[1]},${g[2]},1)`;
+  $('grade').style.opacity=.55;
+  $('shots').style.filter=`brightness(${1-dark})`+(cur.g==='cold'||cur.g==='dark'?' saturate(.8)':'');
+  // 빛줄기
+  let ro=0;for(const s of SH) if(s.rays) ro=Math.max(ro,win(t,s.t-.7,s.e+.7,1.5,1.5));
+  const glowE=EV.filter(e=>e.glow).reduce((m,e)=>Math.max(m,win(t,e.t,e.e,1,1.2)),0);
+  $('rays').style.opacity=.55*ro+.6*glowE;
+  $('rays').style.transform=`rotate(${Math.sin(t*.07)*3}deg) scale(1.4)`;
+  // 안개 (패럴랙스 속도 다름)
+  $('fog1').style.transform=`translateX(${-((t*9)%600)}px)`;$('fog1').style.opacity=.8;
+  $('fog2').style.transform=`translateX(${-((t*16)%600)+300}px)`;
+  // 먼지
+  cx.clearRect(0,0,1920,1080);
+  const dk=cur.g==='glory'||cur.g==='dawn'||cur.g==='warm';
+  for(const p of DUST){
+    let x=(p.x+p.vx*t*p.z+Math.sin(t*.4+p.ph)*20)%1960; if(x<0)x+=1960;
+    let y=(p.y+p.vy*t*p.z)%1120; if(y<0)y+=1120;
+    const tw=.45+.55*Math.sin(t*1.3+p.ph*3);
+    cx.beginPath();cx.arc(x-20,y-20,p.r*p.z,0,6.283);
+    cx.fillStyle=dk?`rgba(255,226,170,${.28*tw*p.z})`:`rgba(200,210,230,${.16*tw*p.z})`;cx.fill();
+  }
+  // 타이틀
+  const tO=win(t,0.4,TL.segs[1].t+2.2,1.2,1.0);
+  $('title').style.display=tO>0?'flex':'none';$('title').style.opacity=tO;
+  thS.forEach((s,i)=>{const q=eo(P(t,0.6+i*0.14,1.5+i*0.14));s.style.opacity=q;s.style.transform=`translateY(${(1-q)*28}px)`;s.style.filter=`blur(${(1-q)*8}px)`});
+  $('title').style.transform=`scale(${1+t*.004})`;
+  // 엔딩
+  const endE=EV.find(e=>e.kind==='endtitle');const eO=win(t,endE.t+3.5,TOTAL+5,1.6,1);
+  $('end').style.display=eO>0?'flex':'none';$('end').style.opacity=eO;
+  [...$('chips').children].forEach((c,i)=>{const q=eo(P(t,endE.t+5+i*.5,endE.t+6+i*.5));c.style.opacity=q;c.style.transform=`translateY(${(1-q)*16}px)`});
+  // 구간 판정
+  const seg=TL.segs.find(s=>t>=s.t-.4&&t<=s.e+.5);
+  const inNar=!!(seg&&seg.kind==='nar');
+  // HUD 장절
+  let v=null;for(const s of TL.subs) if(s.kind==='read'&&typeof s.v==='number'&&t>=s.t-.3) v=s.v;
+  const readT=TL.segs[1].t;
+  const hO=(1-P(t,TL.END-9,TL.END-7))*P(t,readT+1.5,readT+2.5);
+  $('hud').style.opacity=hO;
+  // 해설 중엔 장절 흐리게
+  let nAmt=0;for(const s of TL.segs) if(s.kind==='nar') nAmt=Math.max(nAmt,win(t,s.t-.4,s.e+.4,.5,.5));
+  $('ref').innerHTML=v?`${BK} <b>${TL.ch}:${(TL.vl||{})[v]||v}</b>`:`${BK} <b>${TL.ch}${UN}</b>`;
+  $('ref').style.opacity=1-.82*nAmt;$('narlab').style.opacity=nAmt;
+  // 진행 바
+  TL.parts.forEach((p,i)=>{const nx=TL.parts[i+1]?TL.parts[i+1].t:TL.segs[TL.segs.length-1].t;p.el.style.transform=`scaleX(${P(t,p.t,nx)})`});
+  $('prog').style.opacity=hO;
+  // 스팅어 (해설 구간 = 다음 단락 소개)
+  let sp=null;for(const p of TL.parts) if(p.n!=='01'&&t>=p.t-.2&&t<=p.t+8.5) sp=p;
+  if(sp){const a=sp.t, n=TL.segs.find(s=>s.t===sp.t), b=Math.min(n?n.e+.3:a+8,a+8.5);
+    const o=win(t,a+.2,b,.8,.9), q=eo(P(t,a+.2,a+1.4));
+    $('sting').style.display=o>0?'block':'none';$('sting').style.opacity=o;
+    $('sting').querySelector('.p').textContent='PART '+sp.n;
+    $('sting').querySelector('.h').textContent=sp.title;$('sting').querySelector('.rf').textContent=BK+' '+sp.ref;
+    $('sting').querySelector('.h').style.transform=`translateX(${(1-q)*-60}px)`;
+    $('sting').querySelector('.line').style.transform=`scaleX(${q})`;$('sting').querySelector('.line').style.transformOrigin='left';
+    $('sting').querySelector('.band').style.transform=`scaleX(${eo(P(t,a,a+1))})`;$('sting').querySelector('.band').style.transformOrigin='left';
+  } else $('sting').style.display='none';
+  // 자막
+  let rs=null,ns=null;
+  for(const s of TL.subs){ if(t>=s.t-.15&&t<=s.e+.35){ if(s.kind==='read') rs=s; else ns=s; } }
+  const hideE=EV.find(e=>e.hide&&t>=e.t-.1&&t<=e.e);
+  if(rs&&!hideE){const o=Math.min(P(t,rs.t-.15,rs.t+.1),1-P(t,rs.e+.15,rs.e+.35));
+    if($('subt').dataset.k!==rs.text){$('subt').innerHTML=hl(rs.text);$('subt').dataset.k=rs.text}
+    show($('sub'),o,`translateY(${(1-eo(P(t,rs.t-.15,rs.t+.25)))*10}px)`)} else $('sub').style.display='none';
+  if(ns){const o=Math.min(P(t,ns.t-.15,ns.t+.3),1-P(t,ns.e+.05,ns.e+.35));
+    $('nsubt').innerHTML=ns.text.replace('\n','<br>');show($('nsub'),o)} else $('nsub').style.display='none';
+  // 키네틱 이벤트
+  for(const e of EV){
+    if(e.kind==='title'||e.kind==='endtitle'){e.el.style.display='none';continue}
+    const o=win(t,e.t,e.e,.6,.7);
+    if(o<=0){e.el.style.display='none';continue}
+    const q=eo(P(t,e.t,e.t+1.2));
+    if(e.kind==='kw'){show(e.el,o,`translateY(${(1-q)*24}px) scale(${.96+.04*q})`);e.el.querySelector('.w').style.letterSpacing=(0.06+.08*(1-q))+'em'}
+    else if(e.kind==='hero'){show(e.el,o,`scale(${1.04-.04*q})`);e.el.querySelector('.w').style.filter=`blur(${(1-q)*6}px)`}
+    else if(e.kind==='dual'){show(e.el,o);const L=e.el.children;const qr=eo(P(t,e.rt,e.rt+1));L[0].style.opacity=q;L[0].style.transform=`translateX(${(1-q)*-40}px)`;L[1].style.transform=`scaleY(${eo(P(t,e.rt-.5,e.rt+.5))})`;L[2].style.opacity=qr;L[2].style.transform=`translateX(${(1-qr)*40}px)`}
+    else if(e.kind==='list'){show(e.el,o);const L=e.el.children;e.items.forEach((it,i)=>{const qq=eo(P(t,it[1],it[1]+.6));L[i].style.opacity=qq*(1-.6*P(t,e.ft,e.ft+.6));L[i].style.transform=`translateY(${(1-qq)*18}px)`});const qf=eback(P(t,e.ft,e.ft+.7));L[4].style.opacity=P(t,e.ft,e.ft+.4);L[4].style.transform=`scale(${.7+.3*qf})`}
+    else if(e.kind==='stack'){show(e.el,o);[...e.el.children].forEach((c,i)=>{const qq=eo(P(t,e.items[i][1],e.items[i][1]+.7));c.style.opacity=qq;c.style.transform=`translateY(${(1-qq)*20}px)`})}
+    else if(e.kind==='swap'){show(e.el,o);const L=e.el.children;const qb=eo(P(t,e.bt,e.bt+.8)),qc=eo(P(t,e.ct,e.ct+.6));
+      L[0].style.opacity=q*(1-.55*qc);L[0].style.transform=`translateX(${(1-q)*-30}px)`;L[1].style.opacity=qc;L[2].style.opacity=qb;L[2].style.transform=`translateX(${(1-qb)*30}px)`;L[3].style.opacity=qc}
+    else if(e.kind==='stamp'){const qs=P(t,e.t,e.t+.35);show(e.el,o,`scale(${1.35-.35*eo(qs)}) rotate(${-4+2*qs}deg)`)}
+    else if(e.kind==='cite'){show(e.el,o,`translateX(${(1-q)*30}px)`)}
+    else if(e.kind==='sins'){show(e.el,o);[...e.el.children].forEach((c,i)=>{const qq=eo(P(t,e.items[i][1]-.1,e.items[i][1]+.7));const age=P(t,e.items[i][1]+.7,e.items[i][1]+5);c.style.opacity=qq*(1-.55*age);c.style.filter=`blur(${(1-qq)*5}px)`;c.style.transform=`translateY(${(1-qq)*-14}px)`})}
+  }
+  // 키네틱 뒤 어둡게
+  const kb=EV.filter(e=>e.kind!=='title'&&e.kind!=='endtitle'&&e.kind!=='stamp'&&e.kind!=='cite').reduce((m,e)=>Math.max(m,win(t,e.t-.3,e.e+.3,.8,.8)),0);
+  $('kbd').style.opacity=kb*(cur.g==='glory'?1:.7);
+  // 블랙 페이드
+  $('black').style.opacity=Math.max(1-P(t,0,1.2),P(t,TOTAL-2.2,TOTAL-.2));
+}
+window.setTime=setTime;window.TOTAL=TOTAL;
+setTime(0);
+</script></body></html>
