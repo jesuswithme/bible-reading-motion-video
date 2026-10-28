@@ -147,7 +147,7 @@ function build(e,d){
   else if(e.kind==='stack'){d.innerHTML=e.items.map((it,i)=>`<div class="st" style="top:${(e.top||[200,272,388,520])[i]}px;font-size:${(e.sz||[40,92,72,42])[i]}px;color:${(e.col||['var(--beige)','var(--gold2)','var(--ivory)','var(--beige)'])[i]}">${it[0]}</div>`).join('')}
   else if(e.kind==='swap'){d.className='swap';d.innerHTML=`<div class="x a">${e.a}</div><svg class="ar" viewBox="0 0 160 60"><path d="M10 20 H140 M120 6 L142 20 L120 34" stroke="#d9c7a3" stroke-width="3" fill="none"/><path d="M150 44 H20 M40 30 L18 44 L40 58" stroke="#d9c7a3" stroke-width="3" fill="none" opacity=".6"/></svg><div class="x b">${e.b}</div><div class="c">${e.c}</div>`}
   else if(e.kind==='stamp'){d.className='stamp';d.innerHTML=`<div class="n">${e.num}</div><div class="w">${e.txt}</div>`}
-  else if(e.kind==='cite'){d.className='cite';d.innerHTML=`구약 인용<b>${e.txt}</b>`}
+  else if(e.kind==='cite'){d.className='cite';d.innerHTML=`${e.lab||'구약 인용'}<b>${e.txt}</b>`}
   else if(e.kind==='sins'){seed=99;const cols=[300,690,1080,1470];d.innerHTML=e.items.map((it,i)=>{const L=it[0].length;const fs=L>5?40:58;const x=cols[i%4]+(rnd()-.5)*90-(L>5?60:0);const y=215+Math.floor(i/4)*96+(rnd()-.5)*24;return `<div class="sin" style="left:${x}px;top:${y}px;font-size:${fs}px">${it[0]}</div>`}).join('')}
 }
 function show(el,o,tr){el.style.display=o>0.002?(el.dataset.d||'block'):'none';if(o>0.002){el.style.opacity=o;el.style.transform=tr||''}}
