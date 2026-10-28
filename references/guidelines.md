@@ -19,9 +19,10 @@
 
 ## 2. 일러스트
 
-- TopView `topview_generate_image`: model "GPT Image 2", taskType text_to_image, aspectRatio "16:9", resolution "2K", quality "medium" (장당 0.8크레딧).
-- **동시 작업 한도 약 12개**(음악·음성 포함). 넘으면 code 5000 → 앞 작업이 끝난 뒤 다시 제출.
-- 조회: `topview_query_task` taskType text_to_image → `images[0].filePath` (짧은 URL) → curl 로 `img/NN_name.png`. 그다음 2400×1347 JPG 로 줄여 `imgs/` 에(SKILL.md 명령 참고).
+- **codex-image 로 생성**(gpt-image-2, ChatGPT 로그인, TopView 크레딧 0). TopView 이미지 생성은 쓰지 않는다.
+- 작업 폴더에 `prompts.json`(`{"01_name": "프롬프트", ...}`)을 Write 로 작성 → `nohup python $S/gen_images.py > img.log 2>&1 &`. 한 장씩 차례로(장당 약 1분) `img/NN_name.png`(1536×1024)에 저장, 있는 파일은 건너뜀. 다시 만들 그림은 img/ 에서 지우고 재실행.
+- Codex 실행은 반드시 `codex exec --sandbox read-only --skip-git-repo-check -`(스크립트에 들어 있음). `--dangerously-bypass-approvals-and-sandbox` 금지.
+- `img.log` 에 FAIL 이 있으면 `codex login status` 확인 후 재실행. `prep_images.py` 가 가운데를 16:9 로 잘라 2400×1347 JPG 로 `imgs/` 에 만든다 → 프롬프트에 `centered composition` 을 넣어 핵심 소재가 잘리지 않게 한다.
 - 한 장에 새 그림 10~16장 + 이전 장 그림 재사용 가능(빈 십자가, 빈 무덤, 해돋이, 율법 돌판 등).
 - 프롬프트 공통 꼬리: `Cinematic biblical digital painting: … deep blue shadows and gold, beige palette, painterly, highly detailed, wide composition, no text, no watermark` (+ 필요하면 `no people`, `no readable text`).
 - 장면 원칙: 본문이 직접 묘사한 장면 우선, 추상 개념은 상징(덫, 저울, 베틀, 사슬, 씨앗 등). 1세기 근동·그리스·로마 고증 분위기.
@@ -74,4 +75,4 @@
 - Git Bash heredoc 안에 Python 을 쓰면 `\n`·따옴표가 깨지기 쉽다 → 장별 파일(chapter_tl.py, docs.json, narr.json)은 Write 도구로 작성.
 - Windows 콘솔 한글: `PYTHONIOENCODING=utf-8` 를 붙여 실행.
 - 문제 구간만 고칠 때: `python render.py A 끝 fix.mp4` → `python finalize.py --splice A`.
-- TopView 크레딧 한 장 대략: 이미지 14장 11 + 음악 5곡 5 + 해설 6개 0.6 ≈ 17.
+- TopView 크레딧 한 장 대략: 음악 5곡 5 + 해설 6개 0.6 ≈ 6 (이미지는 codex-image 라 크레딧 없음, 14장 약 15분).

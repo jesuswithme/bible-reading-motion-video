@@ -19,7 +19,8 @@ git clone https://github.com/jesuswithme/bible-reading-motion-video ~/.claude/sk
 
 - Python 패키지: `pip install faster-whisper playwright numpy pillow` 후 `python -m playwright install chromium`
 - ffmpeg / ffprobe (PATH에 등록)
-- TopView MCP 연결(그림·음악·해설 음성 생성, 크레딧 사용)
+- Codex CLI 0.123 이상 + ChatGPT 로그인(그림 생성, TopView 크레딧 없음)
+- TopView MCP 연결(음악·해설 음성 생성, 크레딧 사용)
 
 ## 사용
 

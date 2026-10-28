@@ -1,6 +1,6 @@
 ---
 name: bible-reading-motion-video
-description: This skill should be used when the user provides a Korean Bible reading audio file (예 "롬8장.m4a", "창1장.mp3", 낭독 음성) and asks to make a YouTube motion-graphics video from it ("같은 방식으로 만들어줘", "성경 낭독 영상", "말씀 영상 만들어줘"). It keeps the original reader's voice, transcribes and aligns it to the 개역개정 text, inserts short AI narration bridges between paragraphs (TopView TTS 'Eunji'), generates biblical illustrations and paragraph-specific narrative BGM with TopView, and renders a 1920×1080 30fps MP4 with Korean subtitles, kinetic typography, plus SRT/transcript/storyboard/narration-script documents.
+description: This skill should be used when the user provides a Korean Bible reading audio file (예 "롬8장.m4a", "창1장.mp3", 낭독 음성) and asks to make a YouTube motion-graphics video from it ("같은 방식으로 만들어줘", "성경 낭독 영상", "말씀 영상 만들어줘"). It keeps the original reader's voice, transcribes and aligns it to the 개역개정 text, inserts short AI narration bridges between paragraphs (TopView TTS 'Eunji'), generates biblical illustrations with codex-image (Codex CLI, gpt-image-2) and paragraph-specific narrative BGM with TopView, and renders a 1920×1080 30fps MP4 with Korean subtitles, kinetic typography, plus SRT/transcript/storyboard/narration-script documents.
 ---
 
 # 성경 낭독 모션그래픽 영상 (로마서 시리즈 확정 방식)
@@ -14,7 +14,7 @@ description: This skill should be used when the user provides a Korean Bible rea
 세부 기준(해설 원고 규칙, 그림 금지 항목, BGM 프롬프트 쓰는 법, 점검표)은 **`references/guidelines.md` 를 먼저 읽는다.** 실제 사례: `references/*_example.*` (로마서 8장).
 
 ## 준비물 확인
-python(faster_whisper, playwright+chromium, numpy, PIL), ffmpeg/ffprobe, TopView MCP(이미지·음악·음성). 질문으로 멈추지 말고 바로 시작한다. 진행 중 짧게 상황을 알린다.
+python(faster_whisper, playwright+chromium, numpy, PIL), ffmpeg/ffprobe, Codex CLI 0.123+ ChatGPT 로그인(`codex login status`, 이미지), TopView MCP(음악·음성). 질문으로 멈추지 말고 바로 시작한다. 진행 중 짧게 상황을 알린다.
 
 `S=~/.claude/skills/bible-reading-motion-video/scripts` 로 두고, **모든 스크립트는 작업 폴더 안에서** `PYTHONIOENCODING=utf-8 python $S/xxx.py` 로 실행한다.
 
@@ -29,9 +29,10 @@ cd work10 && (PYTHONIOENCODING=utf-8 nohup python $S/asr.py > asr.log 2>&1 &)
 - setup_work.py 출력: 절·소제목·병합 절·난외주·무음 구간. 이것으로 **단락(낭독 구간)을 정한다**.
 
 ### 2. 에셋 제출 (받아쓰기를 기다리는 동안)
-- 단락 구성에 맞춰 **BGM 4~5곡**과 **일러스트 10~16장**을 TopView 에 제출(동시 한도 ~12, 넘친 것은 나중에). task id 를 `tasks.txt` 에 적어 둔다.
-- 해설 원고 `narr.json` 작성 → 해설 음성 생성(voiceId·속도는 config.json). 결과 URL 을 curl 로 `bgm1.mp3…`, `img/NN_name.png`, `tts/N0.mp3…` 에 받는다.
-- `python $S/prep_images.py` → `img_grid.jpg` 를 Read 로 검수(금지 그림은 다시 생성). `python $S/musan.py bgm*.mp3` 로 곡 흐름 파악. `python $S/tts_check.py` 로 해설 길이·발음·문장 끝 확인.
+- 단락 구성에 맞춰 **BGM 4~5곡**을 TopView 에 제출(동시 한도 ~12). task id 를 `tasks.txt` 에 적어 둔다.
+- **일러스트 10~16장**은 `prompts.json` 작성 → `(PYTHONIOENCODING=utf-8 nohup python $S/gen_images.py > img.log 2>&1 &)` (codex-image, 크레딧 없음, 장당 약 1분 → `img/NN_name.png`).
+- 해설 원고 `narr.json` 작성 → 해설 음성 생성(voiceId·속도는 config.json). 결과 URL 을 curl 로 `bgm1.mp3…`, `tts/N0.mp3…` 에 받는다.
+- `python $S/prep_images.py` → `img.log` 에 FAIL 없는지 확인 후 `img_grid.jpg` 를 Read 로 검수(금지 그림은 img/ 에서 지우고 gen_images.py 재실행). `python $S/musan.py bgm*.mp3` 로 곡 흐름 파악. `python $S/tts_check.py` 로 해설 길이·발음·문장 끝 확인.
 
 ### 3. 정렬과 자막
 - `asr.log` 완료 확인 → 본문과 다르게 들린 곳은 `python $S/asr_check.py 시작-끝 …`(두 모델 모두 다르면 '낭독 확인 필요').
@@ -53,4 +54,4 @@ python $S/finalize.py            # 합치기·디코딩 검증·final_grid.jpg·
 - `final_grid.jpg` 를 Read 로 확인. 문제 구간만 `python $S/render.py A 끝 fix.mp4`(A·끝은 **프레임 번호** = 초×30, 끝은 전체 프레임 수) → `python $S/finalize.py --splice A`.
 
 ### 6. 보고 (한국어, 간결)
-길이·해상도·용량·검증 결과, 단락별 연출과 BGM 흐름 표, TopView 크레딧, **확인할 것**(낭독 확인 필요 구절, 다시 만든 그림과 이유, 해설 중 해석이 갈릴 수 있는 표현, 개역개정 소제목이 아닌 PART 제목), 다음 장 제안. 파일은 markdown 링크로.
+길이·해상도·용량·검증 결과, 단락별 연출과 BGM 흐름 표, TopView 크레딧(음악·음성), codex-image 생성 장수, **확인할 것**(낭독 확인 필요 구절, 다시 만든 그림과 이유, 해설 중 해석이 갈릴 수 있는 표현, 개역개정 소제목이 아닌 PART 제목), 다음 장 제안. 파일은 markdown 링크로.
